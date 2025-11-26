@@ -15,7 +15,7 @@
 
 /**
  * Parse a regex of the form [0-9]*\.[0-9]+E[+-][0-9]+ without using slow ahh regex
- * Generated with chatgpt, maybe need to correct it
+ * Generated with chatgpt
  */
 double parseScientificNotation(const std::string& s) {
     size_t ePos = s.find('E');
@@ -94,9 +94,7 @@ std::vector<Cell> Topology::getInputTopology(const std::string& file_path){
     /**
      * Jumping all lines that we dont need to use now
      */
-    int id, boundary, no_neighboring_nodes, no_attached_cells;
     for(int i=0; i<no_nodes; i++){
-        in >> id >> boundary >> no_neighboring_nodes >> no_attached_cells;
         ignoreLine(in);
     }
     ignoreLine(in);//Node-node and node-cell connectivity
@@ -136,9 +134,6 @@ std::vector<Cell> Topology::getInputTopology(const std::string& file_path){
         ignoreLine(in);
         result.push_back(new_cell);
     }
-
-    //IDK what to do with "48  | number and list of boundary nodes" so I stop here, but it should be enough
-    //TODO : ask professor why is there always an int before the "numberand list of boundary nodes"
 
     return result;
 }
