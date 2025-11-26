@@ -71,6 +71,10 @@ void Point2D::printInputNodes(std::vector<Point2D> vect){
  * ------------------------------------------------------------------------------------------------------------------------------------------------------------
  */
 
+void ignoreLine(std::ifstream& in) {
+    in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+}
+
 /**
  * Parse a input_topo.dat file into a Topology object
  */
@@ -84,9 +88,8 @@ std::vector<Cell> Topology::getInputTopology(const std::string& file_path){
 
     in >> no_cells >> no_nodes >> max_neighbors;
     std::string trashbin = "";
-    //TODO : maybe a better version of this
-    std::getline(in,trashbin); //| nc, nn, ncnmax
-    std::getline(in,trashbin); // Nodes: ID, ID of boundary, no. of neighboring nodes, no. of attached cells
+    ignoreLine(in); //| nc, nn, ncnmax
+    ignoreLine(in); // Nodes: ID, ID of boundary, no. of neighboring nodes, no. of attached cells
 
     /**
      * Jumping all lines that we dont need to use now
@@ -94,13 +97,13 @@ std::vector<Cell> Topology::getInputTopology(const std::string& file_path){
     int id, boundary, no_neighboring_nodes, no_attached_cells;
     for(int i=0; i<no_nodes; i++){
         in >> id >> boundary >> no_neighboring_nodes >> no_attached_cells;
-        std::getline(in,trashbin);
+        ignoreLine(in);
     }
-    std::getline(in,trashbin);//Node-node and node-cell connectivity
+    ignoreLine(in);//Node-node and node-cell connectivity
     for(int i=0; i<no_nodes; i++){
-        std::getline(in,trashbin);
+        ignoreLine(in);
     }
-    std::getline(in,trashbin); // Cells: ID, ID of boundary, no. of vertices, no. of neighboring cells
+    ignoreLine(in); // Cells: ID, ID of boundary, no. of vertices, no. of neighboring cells
 
     /**
      * Storing cells and producing result
@@ -111,9 +114,9 @@ std::vector<Cell> Topology::getInputTopology(const std::string& file_path){
         int id, boundary, no_vertices, no_neighbors;
         in >> id >> boundary >> no_vertices >> no_neighbors;
         temp_cells.push_back({id,boundary,no_vertices});
-        std::getline(in,trashbin);
+        ignoreLine(in);
     }
-    std::getline(in,trashbin); //Cell-node and cell-cell connectivity
+    ignoreLine(in); //Cell-node and cell-cell connectivity
 
     for(int i=0; i<no_cells; i++){
         Cell new_cell;
@@ -130,7 +133,7 @@ std::vector<Cell> Topology::getInputTopology(const std::string& file_path){
             new_cell.indices.push_back(node_id - 1); //"All IDs and lists start with 1 (Fortran-style, not C, sorry...)" :(
         }
 
-        std::getline(in,trashbin);
+        ignoreLine(in);
         result.push_back(new_cell);
     }
 
