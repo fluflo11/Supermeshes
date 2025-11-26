@@ -29,7 +29,7 @@ double parseScientificNotation(const std::string& s) {
 /**
  * Returns a list of all the nodes of an input_nodes.dat file. 
  */
-std::vector<Point2D> Point2D::getInputNodes(std::string file_path){
+std::vector<Point2D> Point2D::getInputNodes(const std::string& file_path){
     std::ifstream in(file_path);
     if(!in) std::cerr << file_path << " was not found";
 
@@ -37,6 +37,7 @@ std::vector<Point2D> Point2D::getInputNodes(std::string file_path){
     std::string n_points_string;
     std::getline(in,n_points_string);
     std::vector<Point2D> result;
+    int id = 0;
 
     while(std::getline(in,line)){
         std::istringstream iss(line);
@@ -44,8 +45,10 @@ std::vector<Point2D> Point2D::getInputNodes(std::string file_path){
         if(iss>>a>>b){
             double a_parsed = parseScientificNotation(a);
             double b_parsed = parseScientificNotation(b);
-            Point2D new_point {a_parsed,b_parsed};
+            id++;
+            Point2D new_point{a_parsed,b_parsed,id};
             result.push_back(new_point);
+            
         }
     }
     return result;
@@ -53,7 +56,7 @@ std::vector<Point2D> Point2D::getInputNodes(std::string file_path){
 
 void Point2D::printInputNodes(std::vector<Point2D> vect){
     for(Point2D point: vect){
-        std::cout << point.x << " " << point.y << "\n";
+        std::cout << point.x << " " << point.y << " " << point.id <<"\n";
     }
 }
 
