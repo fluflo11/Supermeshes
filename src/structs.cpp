@@ -8,6 +8,12 @@
 #include <stdexcept>
 
 /**
+ * ------------------------------------------------------------------------------------------------------------------------------------------------------------
+ * Point2D
+ * ------------------------------------------------------------------------------------------------------------------------------------------------------------
+ */
+
+/**
  * Parse a regex of the form [0-9]*\.[0-9]+E[+-][0-9]+ without using slow ahh regex
  * Generated with chatgpt, maybe need to correct it
  */
@@ -24,7 +30,6 @@ double parseScientificNotation(const std::string& s) {
 
     return mantissa * std::pow(10.0, exponent);
 }
-
 
 /**
  * Returns a list of all the nodes of an input_nodes.dat file. 
@@ -60,4 +65,90 @@ void Point2D::printInputNodes(std::vector<Point2D> vect){
     }
 }
 
+/**
+ * ------------------------------------------------------------------------------------------------------------------------------------------------------------
+ * Topology
+ * ------------------------------------------------------------------------------------------------------------------------------------------------------------
+ */
 
+/**
+ * Parse a input_topo.dat file into a Topology object
+ */
+std::vector<Cell> Topology::getInputTopology(const std::string& file_path){
+    std::ifstream in(file_path);
+    if(!in) std::cerr << file_path << " was not found";
+
+    std::vector<Cell> result;
+
+    int no_cells, no_nodes, max_neighbors;
+
+    in >> no_cells >> no_nodes >> max_neighbors;
+    std::string trashbin = "";
+    //TODO : maybe a better version of this
+    std::getline(in,trashbin); //| nc, nn, ncnmax
+    std::getline(in,trashbin); // Nodes: ID, ID of boundary, no. of neighboring nodes, no. of attached cells
+
+    /**
+     * Jumping all lines that we dont need to use now
+     */
+    int id, boundary, no_neighboring_nodes, no_attached_cells;
+    for(int i=0; i<no_nodes; i++){
+        in >> id >> boundary >> no_neighboring_nodes >> no_attached_cells;
+        std::getline(in,trashbin);
+    }
+    std::getline(in,trashbin);//Node-node and node-cell connectivity
+    for(int i=0; i<no_nodes; i++){
+        std::getline(in,trashbin);
+    }
+    std::getline(in,trashbin); // Cells: ID, ID of boundary, no. of vertices, no. of neighboring cells
+
+    /**
+     * Storing cells and producing result
+     */
+    std::vector<CellTemp> temp_cells;
+
+    for(int i=0;i<no_cells; i++){
+        int id, boundary, no_vertices, no_neighbors;
+        in >> id >> boundary >> no_vertices >> no_neighbors;
+        temp_cells.push_back({id,boundary,no_vertices});
+        std::getline(in,trashbin);
+    }
+    std::getline(in,trashbin); //Cell-node and cell-cell connectivity
+
+    for(int i=0; i<no_cells; i++){
+        Cell new_cell;
+        new_cell.id = temp_cells[i].id;
+        new_cell.boundary_id = temp_cells[i].boundary;
+
+        int no_vertices = temp_cells[i].no_vertices;
+        int read_id;
+        in >> read_id; 
+
+        for(int j = 0; j<no_vertices; j++){
+            int node_id;
+            in >> node_id;
+            new_cell.indices.push_back(node_id - 1); //"All IDs and lists start with 1 (Fortran-style, not C, sorry...)" :(
+        }
+
+        std::getline(in,trashbin);
+        result.push_back(new_cell);
+    }
+
+    //IDK what to do with "48  | number and list of boundary nodes" so I stop here, but it should be enough
+    //TODO : ask professor why is there always an int before the "numberand list of boundary nodes"
+
+    return result;
+}
+
+void Topology::printTopology(){
+    if(!cells.empty()){
+        for(Cell cell: cells){
+            std::cout << cell.id << " " << cell.boundary_id << "\n" << 
+            "indices : (size ="  << cell.indices.size() << ")" << "\n";
+            for(int i: cell.indices){
+                std::cout << i << " ";
+            }
+            std::cout << "\n";
+        }
+    }
+}
