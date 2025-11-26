@@ -11,5 +11,7 @@ std::vector<Cell> my_cells = Topology::getInputTopology(input_file);
 Topology my_topology(my_cells);
 my_topology.printTopology();
 ```
+## Author
+[Florentin Royer](https://github.com/fluflo11)
 
 ![](thinking-cat.gif)
