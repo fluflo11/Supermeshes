@@ -4,15 +4,20 @@ all: build
 
 build:
 	g++ -o list_nodesandtopo src/main.cpp src/structs.cpp
-	g++ -o auto_test src/auto_test.cpp src/structs.cpp src/utils.cpp
+	g++ -o auto_test_winding src/auto_test_winding.cpp src/structs.cpp src/utils.cpp
+	g++ -o auto_test_intersection src/auto_test_intersection.cpp src/structs.cpp src/utils.cpp
 
-run_nodes_topo: 
+run:
+	echo nodesandotopo
 	./list_nodesandtopo
-
-run_winding:
-	./auto_test
+	echo test_winding
+	./auto_test_winding
+	echo test_intersection
+	./auto_test_intersection
+	
 
 
 clean: 
 	rm list_nodesandtopo
-	rm auto_test
+	rm auto_test_winding
+	rm auto_test_intersection

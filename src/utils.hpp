@@ -8,6 +8,7 @@
 
 namespace Utils{
 
+const double THRESHOLD = 1e-8;
 /**
  * "If you wish to make an apple pie from scratch, you must first invent the universe"
  * TODO²
@@ -16,7 +17,7 @@ double distance(const Point2D& a, const Point2D& b);
 /**
  * Returns the vector between two points
  */
-std::tuple<double,double> subtract(const Point2D& a, const Point2D& b);
+std::tuple<double,double> substract(const Point2D& a, const Point2D& b);
 /**
  * 
  */
@@ -38,7 +39,7 @@ double crossProduct(const std::tuple<double,double>& a, const std::tuple<double,
  */
 bool winding(const Point2D& p, const std::vector<Point2D>& poly);
 
-std::vector<Point2D> getPolygonIntersection(const std::vector<Point2D>& p1, const std::vector<Point2D>& p2);
+std::vector<Point2D> getPolygonIntersection(const std::vector<Point2D>& poly1, const std::vector<Point2D>& poly2);
 
 }
 
