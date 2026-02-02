@@ -24,7 +24,7 @@ int main() {
         Point2D(1,3,6)
     };
 
-
+    
     std::cout << "=== Polygon 1 ===\n";
     for(const auto& p : poly_1)
         std::cout << "(" << p.x << ", " << p.y << ")\n";

@@ -5,19 +5,17 @@
 
 class Point2D{
 public :
-    double x;
-    double y;
+    const double x;
+    const double y;
     int id;
-    Point2D(double x_param, double y_param, int id_param){
-        x = x_param;
-        y = y_param;
-        id = id_param;
-    }
+    Point2D(const double x_param, const double y_param, int id_param):x(x_param),y(y_param),id(id_param){}
     /**
      * Returns a list of all the nodes of an input_nodes.dat file. 
      */
     static std::vector<Point2D> getInputNodes(const std::string& file_path);
     static void printInputNodes(std::vector<Point2D> vect);
+    // """bad"""
+    Point2D & operator=(Point2D const&) { return *this;}
 };
 
 struct CellTemp{

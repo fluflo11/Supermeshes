@@ -3,6 +3,7 @@
 #include <vector>
 #include <tuple>
 #include <iostream>
+#include <math.h>
 
 double Utils::distance(const Point2D& a, const Point2D& b){
     double dd = 0.0;
@@ -81,14 +82,22 @@ bool Utils::winding(const Point2D& p, const std::vector<Point2D>& poly) {
         }
         
     }
+    (wn != 0) ? (std::cout << "inside" << std::endl):(std::cout << "outside" << std::endl);
     return wn != 0;
 }
 
 
 bool inside(const Point2D& p1, const Point2D& p2, const Point2D& p){
-    auto edge = Utils::substract(p1,p2);
+    /**auto edge = Utils::substract(p1,p2);
     auto temp_edge = Utils::substract(p1,p);
-    return (Utils::crossProduct(edge,temp_edge) >= 0);
+    return (Utils::crossProduct(edge,temp_edge) >= 0);**/
+    auto t1 = (p2.x - p1.x)*(p.y-p1.y);
+    auto t2 = (p.x - p1.x)*(p2.y - p1.y);
+    auto res = t1 - t2;
+    if(std::min(p1.x,p2.x) <= p.x && p.x <= std::max(p1.x,p2.x) && std::min(p1.y,p2.y) <= p.y && std::max(p1.y,p2.y)){
+        return true;
+    }
+    return false;
 }
 
 Point2D computeIntersection(const Point2D& p1, const Point2D& p2, const Point2D& p3, const Point2D& p4){
@@ -142,35 +151,49 @@ done
  */
 std::vector<Point2D> getPolygonIntersection(const std::vector<Point2D>& poly1, const std::vector<Point2D>& poly2){
     std::vector<Point2D> result = poly1;
-
+    std::vector<Point2D> inputlist = result;
     for(int i=0; i< poly2.size(); i++)
-    {
+    {   
+        std::cout << "MAIN FOR LOOP : " << i << std::endl;
         Point2D p1 = poly2[i];
         Point2D p2 = poly2[(i+1)%poly2.size()];
+        std::cout << "P1 = " << p1.x << "," << p1.y <<std::endl;
+        std::cout << "P2 = " << p2.x << "," << p2.y <<std::endl;
         
-        std::vector<Point2D> inputlist = result;
         result.clear();
 
         if(inputlist.empty()){
+            std::cout << "inputlist is empty, BREAK"  << std::endl;
             break;
         }
 
         Point2D starting_point = inputlist.back();
 
         for(Point2D ending_point: inputlist){
+            std::cout << "starting point = " << starting_point.x << "," <<starting_point.y << std::endl;
+            std::cout << "ending point = " << ending_point.x << "," <<ending_point.y << std::endl;
             bool is_inside_start = inside(p1,p2,starting_point);
             bool is_inside_end = inside(p1,p2,ending_point);
+            std::cout << "is_inside_start = " << is_inside_start << std::endl;
+            std::cout << "is_inside_end= " << is_inside_end << std::endl;
 
             if(is_inside_start && is_inside_end){
                 result.push_back(ending_point);
+                std::cout << "CASE 1: Entirely inside" << std::endl;
             }
             else if(is_inside_start && (!is_inside_end) ){
                 Point2D intersecting_point = computeIntersection(p1,p2,starting_point,ending_point);
                 result.push_back(intersecting_point);
+                std::cout << "CASE 2 : Intersection" << std::endl;
             }
             else if((!is_inside_start) && is_inside_end){
                 Point2D intersecting_point = computeIntersection(p1,p2,starting_point,ending_point);
                 result.push_back(intersecting_point);
+                std::cout << "CASE 3 : Intersection"  << std::endl;
+            }
+            else
+            {
+                std::cout << "CASE 4: No intersection" << std::endl;
             }
 
             starting_point = ending_point;
