@@ -1,4 +1,4 @@
-CXX = gcc
+CXX = g++
 FLAGS = -o
 
 # Inputs
