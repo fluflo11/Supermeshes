@@ -5,36 +5,36 @@
 //Tests automatically generated, not 
 
 // Déclare la fonction (si elle n’est pas dans un header)
-std::vector<Point2D> getPolygonIntersection(const std::vector<Point2D>& poly1, const std::vector<Point2D>& poly2);
+std::vector<Point2D> getPolygonIntersection(const std::vector<Point2D>& poly_1, const std::vector<Point2D>& poly_2);
 
 int main() {
 
-    // --- POLYGONE 1 : carré ---
-    std::vector<Point2D> poly1 = {
+    std::vector<Point2D> poly_1 = {
         Point2D(0,0,0),
-        Point2D(0,4,0),
-        Point2D(0,4,4),
-        Point2D(0,0,4)
+        Point2D(2,0,1),
+        Point2D(2,2,3),
+        Point2D(0,2,2)
+        
     };
 
-    // --- POLYGONE 2 : carré décalé ---
-    std::vector<Point2D> poly2 = {
-        Point2D(0,2,2),
-        Point2D(0,6,2),
-        Point2D(0,6,6),
-        Point2D(0,2,6)
+    std::vector<Point2D> poly_2 = {
+        Point2D(1,1,4),
+        Point2D(3,1,5),
+        Point2D(3,3,6),
+        Point2D(1,3,6)
     };
+
 
     std::cout << "=== Polygon 1 ===\n";
-    for(const auto& p : poly1)
+    for(const auto& p : poly_1)
         std::cout << "(" << p.x << ", " << p.y << ")\n";
 
     std::cout << "\n=== Polygon 2 ===\n";
-    for(const auto& p : poly2)
+    for(const auto& p : poly_2)
         std::cout << "(" << p.x << ", " << p.y << ")\n";
 
     // --- Calcul intersection ---
-    std::vector<Point2D> inter = getPolygonIntersection(poly1, poly2);
+    std::vector<Point2D> inter = getPolygonIntersection(poly_1, poly_2);
 
     std::cout << "\n=== Intersection ===\n";
 

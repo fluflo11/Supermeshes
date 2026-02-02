@@ -35,6 +35,9 @@ double Utils::crossProduct(const std::tuple<double,double>& a, const std::tuple<
     return ax * by - ay * bx;
 }
 
+inline double isLeft(const Point2D& P1, const Point2D& P2, const Point2D& P) {
+    return (P2.x - P1.x) * (P.y - P1.y) - (P.x - P1.x) * (P2.y - P1.y);
+}
 /**
  * Still need to test it
  */
@@ -46,18 +49,14 @@ bool Utils::winding(const Point2D& p, const std::vector<Point2D>& poly) {
         const Point2D& p2 = poly[(i + 1) % n];
         if (p1.y <= p.y) {          
             if (p2.y > p.y) {      
-                std::tuple<double,double> edge = Utils::substract(p1, p2);
-                std::tuple<double,double> toPoint = Utils::substract(p1, p);
-                if (Utils::crossProduct(edge, toPoint) > 0) { 
+                if (isLeft(p1, p2, p) > 0) {
                     wn++;
                 }
             }
         }
         else {                        
             if (p2.y <= p.y) {     
-                std::tuple<double,double> edge = Utils::substract(p1, p2);
-                std::tuple<double,double> toPoint = Utils::substract(p1, p);
-                if (Utils::crossProduct(edge, toPoint) < 0) { 
+                if (isLeft(p1, p2, p) < 0) {
                     wn--;
                 }
             }

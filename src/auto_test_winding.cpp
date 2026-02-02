@@ -9,7 +9,7 @@
 void runTest(const std::string& label, const Point2D& p, const std::vector<Point2D>& poly) {
     bool result = Utils::winding(p, poly);
     std::cout << "Test " << label << " (" << p.x << ", " << p.y << ") -> " 
-              << (result ? "DEDANS [OK]" : "DEHORS [OK]") << std::endl;
+              << (result ? "INSIDE" : "OUTSIDE") << std::endl;
 }
 
 int main() {
