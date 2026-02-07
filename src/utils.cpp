@@ -173,18 +173,15 @@ std::vector<Point2D> getPolygonIntersection(const std::vector<Point2D>& poly1, c
             bool is_inside_end = inside(p1,p2,ending_point);
 
             if(is_inside_start && is_inside_end){
-                // CAS 1 : Les deux sont à l'intérieur, on garde le point final
                 result.push_back(ending_point);
                 std::cout << "CASE 1: Entirely inside" << std::endl;
             }
             else if(is_inside_start && (!is_inside_end) ){
-                // CAS 2 : On sort du polygone, on ajoute l'intersection
                 Point2D intersecting_point = computeIntersection(p1,p2,starting_point,ending_point);
                 result.push_back(intersecting_point);
                 std::cout << "CASE 2 : Intersection (Exit)" << std::endl;
             }
             else if((!is_inside_start) && is_inside_end){
-                // CAS 3 : On entre dans le polygone, on ajoute l'intersection ET le point final
                 Point2D intersecting_point = computeIntersection(p1,p2,starting_point,ending_point);
                 result.push_back(intersecting_point);
                 result.push_back(ending_point);
@@ -192,11 +189,9 @@ std::vector<Point2D> getPolygonIntersection(const std::vector<Point2D>& poly1, c
             }
             else
             {
-                // CAS 4 : Les deux sont à l'extérieur, on n'ajoute rien
                 std::cout << "CASE 4: Entirely outside" << std::endl;
             }
         }
-        // Mise à jour pour la prochaine arête du clipPolygon
         inputlist = result;
     }
     return result;
