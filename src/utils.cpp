@@ -91,36 +91,29 @@ bool inside(const Point2D& p1, const Point2D& p2, const Point2D& p){
     return ((p2.x - p1.x)*(p.y - p1.y) - (p2.y - p1.y) * (p.x - p1.x))>=Utils::THRESHOLD;
 }
 
+/**
+ *  Original function (I just adapted the parameters) : https://www.geeksforgeeks.org/dsa/polygon-clipping-sutherland-hodgman-algorithm/
+ */
 Point2D computeIntersection(const Point2D& p1, const Point2D& p2, const Point2D& p3, const Point2D& p4){
-    // Direction du segment du sujet : p4 - p3
-    double dx43 = p4.x - p3.x;
-    double dy43 = p4.y - p3.y;
+    double x1 = p1.x, y1 = p1.y;
+    double x2 = p2.x, y2 = p2.y;
+    double x3 = p3.x, y3 = p3.y;
+    double x4 = p4.x, y4 = p4.y;
+
+    double den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
     
-    // Direction de l'arête de découpe : p2 - p1
-    double dx21 = p2.x - p1.x;
-    double dy21 = p2.y - p1.y;
+    if (std::abs(den) < Utils::THRESHOLD) return Point2D(x3, y3, -1);
 
-    // Dénominateur : produit vectoriel des directions
-    double den = (dx43 * dy21) - (dy43 * dx21);
+    double num_x = (x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4);
+    double num_y = (x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4);
 
-    if (std::abs(den) < 1e-9) return Point2D(p3.x, p3.y, -1);
-
-    // Numérateur : (p1 - p3) x direction_découpe
-    double num = ((p1.x - p3.x) * dy21) - ((p1.y - p3.y) * dx21);
-    
-    double t = num / den;
-
-    Point2D result(
-        p3.x + t * dx43,
-        p3.y + t * dy43,
-        -1
-    );
-    return result;
+    return Point2D(num_x / den, num_y / den, -1);
 }
 
 /**
  * TODO : Debugging
  * Wikipedia code : https://en.wikipedia.org/wiki/Sutherland%E2%80%93Hodgman_algorithm
+ * I also used the variables names of the geeks4geeks implementation to make it easier to read (my variable names were bad translations from french)
  * List outputList = subjectPolygon;  
 
 for (Edge clipEdge in clipPolygon) do
@@ -148,51 +141,39 @@ done
  */
 std::vector<Point2D> getPolygonIntersection(const std::vector<Point2D>& poly1, const std::vector<Point2D>& poly2){
     std::vector<Point2D> result = poly1;
-    std::vector<Point2D> inputlist = result;
 
-    for(int i=0; i < poly2.size(); i++)
-    {   
-        std::cout << "MAIN FOR LOOP : " << i << std::endl;
+    for (size_t i = 0; i < poly2.size(); i++) {
+        size_t k_clip = (i + 1) % poly2.size();
         Point2D p1 = poly2[i];
-        Point2D p2 = poly2[(i+1)%poly2.size()];
-        std::cout << "P1 = " << p1.x << "," << p1.y <<std::endl;
-        std::cout << "P2 = " << p2.x << "," << p2.y <<std::endl;
-        
+        Point2D p2 = poly2[k_clip];
+
+        std::vector<Point2D> inputlist = result;
         result.clear();
 
-        if(inputlist.empty()){
-            std::cout << "inputlist is empty, BREAK"  << std::endl;
-            break;
-        }
+        for (size_t j = 0; j < inputlist.size(); j++) {
+            size_t k_poly = (j + 1) % inputlist.size();
+            Point2D starting_point = inputlist[j]; // ix, iy
+            Point2D ending_point = inputlist[k_poly]; // kx, ky
 
-        for(int i=0; i < inputlist.size(); i++){
-            Point2D starting_point = inputlist[i];
-            Point2D ending_point = inputlist[(i+1)%inputlist.size()];
-            
-            bool is_inside_start = inside(p1,p2,starting_point);
-            bool is_inside_end = inside(p1,p2,ending_point);
+            //(x2 - x1) * (iy - y1) - (y2 - y1) * (ix - x1)
+            double i_pos = (p2.x - p1.x) * (starting_point.y - p1.y) - (p2.y - p1.y) * (starting_point.x - p1.x);
+            double k_pos = (p2.x - p1.x) * (ending_point.y - p1.y) - (p2.y - p1.y) * (ending_point.x - p1.x);
 
-            if(is_inside_start && is_inside_end){
+            if (i_pos > 0 && k_pos > 0) {
                 result.push_back(ending_point);
-                std::cout << "CASE 1: Entirely inside" << std::endl;
             }
-            else if(is_inside_start && (!is_inside_end) ){
-                Point2D intersecting_point = computeIntersection(p1,p2,starting_point,ending_point);
-                result.push_back(intersecting_point);
-                std::cout << "CASE 2 : Intersection (Exit)" << std::endl;
-            }
-            else if((!is_inside_start) && is_inside_end){
-                Point2D intersecting_point = computeIntersection(p1,p2,starting_point,ending_point);
-                result.push_back(intersecting_point);
+
+            else if (i_pos <= 0 && k_pos > 0) {
+                result.push_back(computeIntersection(p1, p2, starting_point, ending_point));
                 result.push_back(ending_point);
-                std::cout << "CASE 3 : Intersection (Entry)"  << std::endl;
             }
-            else
-            {
-                std::cout << "CASE 4: Entirely outside" << std::endl;
+
+            else if (i_pos > 0 && k_pos <= 0) {
+                result.push_back(computeIntersection(p1, p2, starting_point, ending_point));
             }
         }
-        inputlist = result;
+        if (result.empty()) break;
     }
+
     return result;
 }
