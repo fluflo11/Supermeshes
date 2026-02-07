@@ -88,41 +88,38 @@ bool Utils::winding(const Point2D& p, const std::vector<Point2D>& poly) {
 
 
 bool inside(const Point2D& p1, const Point2D& p2, const Point2D& p){
-    /**auto edge = Utils::substract(p1,p2);
-    auto temp_edge = Utils::substract(p1,p);
-    return (Utils::crossProduct(edge,temp_edge) >= 0);**/
-    auto t1 = (p2.x - p1.x)*(p.y-p1.y);
-    auto t2 = (p.x - p1.x)*(p2.y - p1.y);
-    auto res = t1 - t2;
-    if(std::min(p1.x,p2.x) <= p.x && p.x <= std::max(p1.x,p2.x) && std::min(p1.y,p2.y) <= p.y && std::max(p1.y,p2.y)){
-        return true;
-    }
-    return false;
+    return ((p2.x - p1.x)*(p.y - p1.y) - (p2.y - p1.y) * (p.x - p1.x))>=Utils::THRESHOLD;
 }
 
 Point2D computeIntersection(const Point2D& p1, const Point2D& p2, const Point2D& p3, const Point2D& p4){
-    std::tuple<double,double> v12 = Utils::substract(p1,p2);
-    std::tuple<double,double> v34 = Utils::substract(p3,p4);
-    std::tuple<double,double> v13 = Utils::substract(p1,p3);
-
-    double cp0 = Utils::crossProduct(v13,v12);
-    double cp1 = Utils::crossProduct(v34,v12);
-
-    //check parallel case
-    if(std::abs(cp1) < Utils::THRESHOLD) return Point2D(-1,0,0);
-
-    double t = cp0 / cp1;
+    // Direction du segment du sujet : p4 - p3
+    double dx43 = p4.x - p3.x;
+    double dy43 = p4.y - p3.y;
     
-    Point2D result(-1,
-            (p3.x + t*(p4.x - p3.x)),
-            (p3.y + t*(p4.y - p3.y))    
-        );
+    // Direction de l'arête de découpe : p2 - p1
+    double dx21 = p2.x - p1.x;
+    double dy21 = p2.y - p1.y;
 
+    // Dénominateur : produit vectoriel des directions
+    double den = (dx43 * dy21) - (dy43 * dx21);
+
+    if (std::abs(den) < 1e-9) return Point2D(p3.x, p3.y, -1);
+
+    // Numérateur : (p1 - p3) x direction_découpe
+    double num = ((p1.x - p3.x) * dy21) - ((p1.y - p3.y) * dx21);
+    
+    double t = num / den;
+
+    Point2D result(
+        p3.x + t * dx43,
+        p3.y + t * dy43,
+        -1
+    );
     return result;
 }
 
 /**
- * 
+ * TODO : Debugging
  * Wikipedia code : https://en.wikipedia.org/wiki/Sutherland%E2%80%93Hodgman_algorithm
  * List outputList = subjectPolygon;  
 
@@ -152,7 +149,8 @@ done
 std::vector<Point2D> getPolygonIntersection(const std::vector<Point2D>& poly1, const std::vector<Point2D>& poly2){
     std::vector<Point2D> result = poly1;
     std::vector<Point2D> inputlist = result;
-    for(int i=0; i< poly2.size(); i++)
+
+    for(int i=0; i < poly2.size(); i++)
     {   
         std::cout << "MAIN FOR LOOP : " << i << std::endl;
         Point2D p1 = poly2[i];
@@ -167,37 +165,39 @@ std::vector<Point2D> getPolygonIntersection(const std::vector<Point2D>& poly1, c
             break;
         }
 
-        Point2D starting_point = inputlist.back();
-
-        for(Point2D ending_point: inputlist){
-            std::cout << "starting point = " << starting_point.x << "," <<starting_point.y << std::endl;
-            std::cout << "ending point = " << ending_point.x << "," <<ending_point.y << std::endl;
+        for(int i=0; i < inputlist.size(); i++){
+            Point2D starting_point = inputlist[i];
+            Point2D ending_point = inputlist[(i+1)%inputlist.size()];
+            
             bool is_inside_start = inside(p1,p2,starting_point);
             bool is_inside_end = inside(p1,p2,ending_point);
-            std::cout << "is_inside_start = " << is_inside_start << std::endl;
-            std::cout << "is_inside_end= " << is_inside_end << std::endl;
 
             if(is_inside_start && is_inside_end){
+                // CAS 1 : Les deux sont à l'intérieur, on garde le point final
                 result.push_back(ending_point);
                 std::cout << "CASE 1: Entirely inside" << std::endl;
             }
             else if(is_inside_start && (!is_inside_end) ){
+                // CAS 2 : On sort du polygone, on ajoute l'intersection
                 Point2D intersecting_point = computeIntersection(p1,p2,starting_point,ending_point);
                 result.push_back(intersecting_point);
-                std::cout << "CASE 2 : Intersection" << std::endl;
+                std::cout << "CASE 2 : Intersection (Exit)" << std::endl;
             }
             else if((!is_inside_start) && is_inside_end){
+                // CAS 3 : On entre dans le polygone, on ajoute l'intersection ET le point final
                 Point2D intersecting_point = computeIntersection(p1,p2,starting_point,ending_point);
                 result.push_back(intersecting_point);
-                std::cout << "CASE 3 : Intersection"  << std::endl;
+                result.push_back(ending_point);
+                std::cout << "CASE 3 : Intersection (Entry)"  << std::endl;
             }
             else
             {
-                std::cout << "CASE 4: No intersection" << std::endl;
+                // CAS 4 : Les deux sont à l'extérieur, on n'ajoute rien
+                std::cout << "CASE 4: Entirely outside" << std::endl;
             }
-
-            starting_point = ending_point;
         }
+        // Mise à jour pour la prochaine arête du clipPolygon
+        inputlist = result;
     }
     return result;
 }
