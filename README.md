@@ -9,6 +9,14 @@ Topology my_topology = Topology::getInputTopology(input_file);
 my_topology.printTopology();
 ```
 
+### Visualisation 
+
+You can export meshes to vtk format (you can then use Paraview to visualize it).
+```cpp
+VTK::VTK_Exporter my_exporter(my_topology,my_vector);
+std::string output_file = "resources/VTK/mesh.vtk";
+```
+
 ## Computations
 ### Utils
 
