@@ -5,6 +5,8 @@
 #include <iostream>
 #include <math.h>
 
+//TODO : Comments
+
 double Utils::distance(const Point2D& a, const Point2D& b){
     double dd = 0.0;
     dd += (b.x - a.x)*(b.x - a.x);
@@ -138,7 +140,7 @@ for (Edge clipEdge in clipPolygon) do
     done
 done
  */
-std::vector<Point2D> getPolygonIntersection(const std::vector<Point2D>& poly1, const std::vector<Point2D>& poly2){
+std::vector<Point2D> Utils::getPolygonIntersection(const std::vector<Point2D>& poly1, const std::vector<Point2D>& poly2){
     std::vector<Point2D> result = poly1;
 
     for (size_t i = 0; i < poly2.size(); i++) {
@@ -175,4 +177,27 @@ std::vector<Point2D> getPolygonIntersection(const std::vector<Point2D>& poly1, c
     }
 
     return result;
+}
+
+
+double Utils::getPolygonArea(const std::vector<Point2D>& polygon) {
+    double area = 0.0;
+    size_t n = polygon.size();
+    for (size_t i = 0; i < n; ++i) {
+        const Point2D& p1 = polygon[i];
+        const Point2D& p2 = polygon[(i + 1) % n];
+        area += (p1.x * p2.y) - (p2.x * p1.y);
+    }
+    return std::abs(area) / 2.0;
+}
+
+
+
+std::vector<Point2D> Utils::getCellPolygon(const Cell& cell, const std::vector<Point2D>& nodes) {
+    std::vector<Point2D> polygon;
+    polygon.reserve(cell.indices.size());
+    for (int idx : cell.indices) {
+        polygon.push_back(nodes[idx]);
+    }
+    return polygon;
 }

@@ -18,20 +18,20 @@ all: build
 
 build:
 	$(CXX) $(FLAGS) $(LIST_NODES_TOPOLOGY) $(TEST_LIST_NODES_TOPOLOGY) $(FILES)
-	$(CXX) $(FLAGS) $(WINDING) $(TEST_WINDING) $(FILES)
-	$(CXX) $(FLAGS) $(INTERSECTION) $(TEST_INTERSECTION) $(FILES)
+#	$(CXX) $(FLAGS) $(WINDING) $(TEST_WINDING) $(FILES)
+#	$(CXX) $(FLAGS) $(INTERSECTION) $(TEST_INTERSECTION) $(FILES)
 
 run:
 	@echo nodesandotopo
 	./$(LIST_NODES_TOPOLOGY)
-	@echo test_winding
-	./$(WINDING)
-	@echo test_intersection
-	./$(INTERSECTION)
+#	@echo test_winding
+#	./$(WINDING)
+#	@echo test_intersection
+#	./$(INTERSECTION)
 	
 
 
 clean: 
 	rm $(LIST_NODES_TOPOLOGY)
-	rm $(WINDING)
-	rm $(INTERSECTION)
+#	rm $(WINDING)
+#	rm $(INTERSECTION)

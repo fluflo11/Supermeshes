@@ -2,6 +2,9 @@
 #define UTILS_HPP
 #include "structs.hpp"
 #include <tuple>
+
+//TODO : Comments 
+
 /**
  * Just a toolbox with a lot of code borrowed and adapted from Numerical Recipes
  */
@@ -40,6 +43,13 @@ double crossProduct(const std::tuple<double,double>& a, const std::tuple<double,
 bool winding(const Point2D& p, const std::vector<Point2D>& poly);
 
 std::vector<Point2D> getPolygonIntersection(const std::vector<Point2D>& poly1, const std::vector<Point2D>& poly2);
+
+double getPolygonArea(const std::vector<Point2D>& polygon);
+
+/**
+ * Convert a size a cell into a polygon
+ */
+std::vector<Point2D> Utils::getCellPolygon(const Cell& cell, const std::vector<Point2D>& nodes);
 
 }
 

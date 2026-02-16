@@ -160,6 +160,9 @@ Topology Topology::getInputTopology(const std::string& file_path){
     return result;
 }
 
+/**
+ * Just here for debug
+ */
 void Topology::printTopology(){
     if(!cells.empty()){
         for(Cell cell: cells){

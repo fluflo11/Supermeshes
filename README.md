@@ -1,4 +1,9 @@
 # *Supermeshes*
+
+## Getting Started
+
+
+
 ## Parsing 
 ### Nodes
 Node parser is directly implemented as a static function of the Point2D class.
