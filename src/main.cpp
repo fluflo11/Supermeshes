@@ -1,125 +1,107 @@
 #include <iostream>
 #include <vector>
-#include <chrono> // Pour chronométrer la performance
+#include <chrono>
+#include <filesystem>
 #include "structs.hpp"
 #include "utils.hpp"
 #include "VTK_Tools.hpp"
 
-
 int main(int argc, char *argv[]) {
-
-    /**
-    if(argc != 3) {
-        std::cerr << "Incorrect number of arguments" << std::endl << "Correct usage : supermesh [path_mesh_A] [path_mesh_B]";
+    //checking if number of arguments is valid
+    if(argc < 5 || argc > 6) {
+        std::cerr << "Incorrect number of arguments" << std::endl << 
+                    "Correct usage : supermesh {path_input_nodes_A} {path_input_topo_A}" << 
+                    " {path_input_nodes_B} {path_input_topo_B} [-d]";
         return 1;
     }
 
-    std::string path_mesh_A = argv[1];
-    std::string path_mesh_B = argv[2];
-     */
+    std::string path_input_nodes_A = argv[1];
+    std::string path_input_topo_A = argv[2];
+    std::string path_input_nodes_B = argv[3];
+    std::string path_input_topo_B = argv[4];
 
-
-    std::string path = "resources/meshes_for_FR/unitsqmeshes/unitsqmesh_hexreg_000094_midedge/";
-    std::string pathB = "resources/meshes_for_FR/unitsqmeshes/unitsqmesh_hexreg_000449_flipped_nobd/"; 
-
-    std::cout << "[1/4] Loading meshes..." << std::endl;
+    //Checking if all paths are valid or not
+    if (!std::filesystem::exists(path_input_nodes_A)){
+        std::cerr << "Path " << path_input_nodes_A << " is not valid" << std::endl;
+    }
+    if (!std::filesystem::exists(path_input_nodes_B)){
+        std::cerr << "Path " << path_input_nodes_B << " is not valid" << std::endl;
+    }
+    if(!std::filesystem::exists(path_input_topo_A)){
+        std::cerr << "Path " << path_input_topo_A << " is not valid" << std::endl;
+    }
+    if(!std::filesystem::exists(path_input_topo_B)){
+        std::cerr << "Path " << path_input_topo_B << " is not valid" << std::endl;
+    }
     
-    // Mesh A
-    auto nodesA = Point2D::getInputNodes(path + "input_nodes.dat");
-    auto topoA  = Topology::getInputTopology(path + "input_topo.dat");
-    std::cout << " -> Mesh A: " << topoA.cells.size() << " cells." << std::endl;
+    auto nodesA = Point2D::getInputNodes(path_input_nodes_A);
+    auto topoA = Topology::getInputTopology(path_input_topo_A);
+    auto nodesB = Point2D::getInputNodes(path_input_nodes_B);
+    auto topoB = Topology::getInputTopology(path_input_topo_B);
 
-    // Mesh B
-    auto nodesB = Point2D::getInputNodes(pathB + "input_nodes.dat");
-    auto topoB  = Topology::getInputTopology(pathB + "input_topo.dat");
-    std::cout << " -> Mesh B: " << topoB.cells.size() << " cells." << std::endl;
-
-
-    std::cout << "[2/4] Pre-computing AABBs..." << std::endl;
-    auto start_time = std::chrono::high_resolution_clock::now();
-
-    std::vector<std::vector<Point2D>> polysA;
-    std::vector<AABB> boxesA;
-    polysA.reserve(topoA.cells.size());
-    boxesA.reserve(topoA.cells.size());
-
-    for (const auto& cell : topoA.cells) {
-        auto poly = Utils::getCellPolygon(cell, nodesA);
-        polysA.push_back(poly);
-        boxesA.emplace_back(poly);
+    bool debug = false;
+    if(argc == 6){
+        std::string arg = argv[5];
+        if(arg=="-d") debug = true;
     }
 
-    std::vector<std::vector<Point2D>> polysB;
-    std::vector<AABB> boxesB;
-    polysB.reserve(topoB.cells.size());
-    boxesB.reserve(topoB.cells.size());
+    if(debug){
+        std::cout << " -> Mesh A: " << topoA.cells.size() << " cells." << std::endl;
+        std::cout << " -> Mesh B: " << topoB.cells.size() << " cells." << std::endl;
+    }
+
+
+    //Here I measure time but its only to get a small idea of how good this is performance wise
+    auto start_time = std::chrono::high_resolution_clock::now();
+
+    //AABB pre-computing
+
+    std::vector<std::vector<Point2D>> polygons_A;
+    std::vector<AABB> boxes_A;
+
+    polygons_A.reserve(topoA.cells.size());
+    boxes_A.reserve(topoA.cells.size());
+
+    //For each cell we convert it to a vector of points and we store it as a polygon
+    for (const auto& cell : topoA.cells) {
+        auto poly = Utils::getCellPolygon(cell, nodesA);
+        polygons_A.push_back(poly);
+        boxes_A.emplace_back(poly);
+    }
+
+    std::vector<std::vector<Point2D>> polygons_B;
+    std::vector<AABB> boxes_B;
+    polygons_B.reserve(topoB.cells.size());
+    boxes_B.reserve(topoB.cells.size());
 
     for (const auto& cell : topoB.cells) {
         auto poly = Utils::getCellPolygon(cell, nodesB);
-        polysB.push_back(poly);
-        boxesB.emplace_back(poly);
+        polygons_B.push_back(poly);
+        boxes_B.emplace_back(poly);
     }
 
-    std::cout << "[3/4] Computing Intersections (Broad Phase + Narrow Phase)..." << std::endl;
+    // Intersections part
 
-    Topology superTopo;
-    std::vector<Point2D> superNodes; 
+    Topology result_topo;
+    std::vector<Point2D> result_nodes; 
     
-    long long checks_broad = 0;
-    long long checks_narrow = 0;
-    long long intersections_found = 0;
+    Utils::computeSupermesh(polygons_A, boxes_A, polygons_B, boxes_B, result_topo, result_nodes, true);
+    
+    if(debug){
+        auto end_time = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> duration = end_time - start_time;
 
-    for (size_t i = 0; i < polysA.size(); ++i) {
-        for (size_t j = 0; j < polysB.size(); ++j) {
-            
-            //Filtering potential overlaps with AABB method
+        std::cout << "Done in " << duration.count() << " seconds." << std::endl;
+        
+        std::cout << "Exporting to VTK" << std::endl;
 
-            if (!boxesA[i].intersects(boxesB[j])) {
-                continue; 
-            }
-            checks_broad++;
-
-            checks_narrow++;
-            std::vector<Point2D> intersection = Utils::getPolygonIntersection(polysA[i], polysB[j]);
-
-            if (intersection.size() < 3) continue;
-
-            double area = Utils::getPolygonArea(intersection);
-
-            if (area < 1e-12) continue; // Maybe use Utils::Threshold but i wanted to have a lower epsilon here
-
-            intersections_found++;
-            Cell newCell;
-            newCell.id = intersections_found; //Just generating ids
-            newCell.boundary_id = 0;
-
-            for (const auto& p : intersection) {
-                Point2D newPoint(p.x, p.y, superNodes.size() + 1);
-                
-                superNodes.push_back(newPoint);
-                newCell.indices.push_back(superNodes.size() - 1);
-            }
-            
-            superTopo.cells.push_back(newCell);
+        VTK::VTK_Exporter exporter(result_topo, result_nodes);
+        
+        if(exporter.exportVTK("supermesh.vtk", "Supermesh Result")) {
+            std::cout << "[SUCCESS] File 'supermesh.vtk' created." << std::endl;
+        } else {
+            std::cerr << "[ERROR] Export failed." << std::endl;
         }
     }
-
-    auto end_time = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> duration = end_time - start_time;
-
-    std::cout << "Done in " << duration.count() << " seconds." << std::endl;
-    std::cout << "Stats:" << std::endl;
-    std::cout << "  - Potential Pairs (AABB): " << checks_narrow << " (vs " << polysA.size() * polysB.size() << " total)" << std::endl;
-    std::cout << "  - Real Intersections:     " << intersections_found << std::endl;
-    
-    std::cout << "[4/4] Exporting to VTK..." << std::endl;
-    VTK::VTK_Exporter exporter(superTopo, superNodes);
-    
-    if(exporter.exportVTK("supermesh.vtk", "Supermesh Result")) {
-        std::cout << "[SUCCESS] File 'supermesh.vtk' created." << std::endl;
-    } else {
-        std::cerr << "[ERROR] Export failed." << std::endl;
-    }
-
     return 0;
 }

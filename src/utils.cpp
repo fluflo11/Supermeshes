@@ -5,6 +5,7 @@
 #include <iostream>
 #include <math.h>
 
+
 //TODO : Comments
 
 double Utils::distance(const Point2D& a, const Point2D& b){
@@ -200,4 +201,69 @@ std::vector<Point2D> Utils::getCellPolygon(const Cell& cell, const std::vector<P
         polygon.push_back(nodes[idx]);
     }
     return polygon;
+}
+
+
+void Utils::computeSupermesh(const std::vector<std::vector<Point2D>>& polysA, 
+                             const std::vector<AABB>& boxesA,
+                             const std::vector<std::vector<Point2D>>& polysB, 
+                             const std::vector<AABB>& boxesB,
+                             Topology& result_topo,
+                             std::vector<Point2D>& result_nodes,
+                             bool debug) {
+    
+    // Nettoyage des sorties au cas où
+    result_topo.cells.clear();
+    result_nodes.clear();
+
+    long checks_broad = 0;
+    long checks_narrow = 0;
+    long intersections_found = 0;
+
+    for (size_t i = 0; i < polysA.size(); ++i) {
+        for (size_t j = 0; j < polysB.size(); ++j) {
+            //Just skip if there is no intersection between the two bounding boxes
+            if (!boxesA[i].intersects(boxesB[j])) {
+                continue; 
+            }
+            //DEBUG : number of pairs that pass AABB
+            checks_broad++;
+            //DEBUG : number of computations
+            checks_narrow++; 
+            std::vector<Point2D> intersection = Utils::getPolygonIntersection(polysA[i], polysB[j]);
+
+            // checking if this is really a polygon, might remove this later but I wanted to be sure
+            if (intersection.size() < 3) continue;
+
+            // removing all the little artifacts caused by computation errors
+            double area = Utils::getPolygonArea(intersection);
+            if (area < 1e-12) continue; 
+
+            intersections_found++;
+            
+            Cell newCell;
+            newCell.id = intersections_found;
+            newCell.boundary_id = 0;
+
+            // Adding points to the result nodes
+            for (const auto& p : intersection) {
+                Point2D newPoint(p.x, p.y, (int)result_nodes.size() + 1);
+                result_nodes.push_back(newPoint);
+                newCell.indices.push_back((int)result_nodes.size() - 1);
+            }
+            
+            result_topo.cells.push_back(newCell);
+        }
+    }
+
+    /**
+     * Just some prints made for debug (Copilot)
+     */
+    if (debug) {
+        std::cout << "=== Supermesh Statistics ===" << std::endl;
+        std::cout << "  Pairs checked (AABB passed): " << checks_broad << std::endl;
+        std::cout << "  Exact intersections computed: " << checks_narrow << std::endl;
+        std::cout << "  Valid cells created: " << intersections_found << std::endl;
+        std::cout << "============================" << std::endl;
+    }
 }

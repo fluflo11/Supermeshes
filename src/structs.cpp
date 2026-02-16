@@ -187,4 +187,16 @@ bool Topology::consistencyCheck(){
 }
 
 
+bool AABB::intersects(const AABB& other) const {
+    if (x_max < other.x_min || x_min > other.x_max) return false;
+    if (y_max < other.y_min || y_min > other.y_max) return false;
+    return true;
+}
+
+void AABB::print() const {
+    std::cout << "AABB: [" << x_min << ", " << x_max << "] x [" 
+                << y_min << ", " << y_max << "]" << std::endl;
+}
+
+
 

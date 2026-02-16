@@ -49,7 +49,18 @@ double getPolygonArea(const std::vector<Point2D>& polygon);
 /**
  * Convert a size a cell into a polygon
  */
-std::vector<Point2D> Utils::getCellPolygon(const Cell& cell, const std::vector<Point2D>& nodes);
+std::vector<Point2D> getCellPolygon(const Cell& cell, const std::vector<Point2D>& nodes);
+
+/**
+ * 
+ */
+void computeSupermesh(const std::vector<std::vector<Point2D>>& polysA, 
+                          const std::vector<AABB>& boxesA,
+                          const std::vector<std::vector<Point2D>>& polysB, 
+                          const std::vector<AABB>& boxesB,
+                          Topology& result_topo,
+                          std::vector<Point2D>& result_nodes,
+                          bool debug = true);
 
 }
 
