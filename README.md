@@ -2,7 +2,43 @@
 
 ## Getting Started
 
+You can compile it with the makefile : 
+```
+make
+```
 
+You can also compile it by hand if you are on windows, ill add support later : 
+```
+g++ -o supermesh src/main.cpp src/structs.cpp src/utils.cpp src/VTK_Tools.cpp
+```
+
+Then you can run the program with :
+```
+make run
+```
+or 
+```
+./supermesh {path_input_nodes_A} {path_input_topo_A} {path_input_nodes_B} {path_input_topo_B} [-d]
+```
+if you are on linux, or 
+```
+.\supermesh {path_input_nodes_A} {path_input_topo_A} {path_input_nodes_B} {path_input_topo_B} [-d]
+```
+On windows.
+
+Note that I have not yet implemented the "create output file into target directory" feature.
+As a workaround for now : 
+```
+ln -s /the/folder/you/want/your/file/in/supermesh.vtk ./supermesh.vtk
+```
+
+Also the name "supermesh.vtk" is the default name, ill add more options to make it more flexible to use.
+
+## Incoming features
+
+- Adding the output file path
+- Compiling this as a shared library
+- Creating a wrapper to use it in Python
 
 ## Parsing 
 ### Nodes
@@ -39,5 +75,6 @@ I went through a lot of documentation to find the algorithm I wanted to use, I d
 * https://www.cnblogs.com/chriscai/archive/2009/12/10/1620932.html
 
 ![](thinking-cat.gif)
+
 
 
