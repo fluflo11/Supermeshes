@@ -2,10 +2,12 @@ CXX = g++
 
 ifeq ($(OS),Windows_NT)
     EXT = .exe
+	SHARED_EXT = .dll
     RM = rm -f
 	RUN_PREFIX = .
 else
     EXT = 
+	SHARED_EXT = .so
     RM = rm -f
     RUN_PREFIX = ./
 endif
@@ -15,11 +17,12 @@ WINDING_NAME = auto_test_winding
 INTERSECTION_NAME = auto_test_intersection
 
 EXEC = $(EXEC_NAME)$(EXT)
+SHARED_LIB = $(EXEC_NAME)$(SHARED_EXT)
 WINDING = $(WINDING_NAME)$(EXT)
 INTERSECTION = $(INTERSECTION_NAME)$(EXT)
 
 FLAGS = -o
-SHARED_FLAGS = -shared
+SHARED_FLAGS = -shared -fPIC -o
 
 # Inputs
 FILES = src/structs.cpp src/utils.cpp src/VTK_Tools.cpp
@@ -47,6 +50,9 @@ build_tests:
 	$(CXX) $(FLAGS) $(WINDING) $(TEST_WINDING) $(FILES)
 	$(CXX) $(FLAGS) $(INTERSECTION) $(TEST_INTERSECTION) $(FILES)
 
+build_shared :
+	$(CXX) $(SHARED_FLAGS) $(SHARED_LIB) $(FILES)
+ 
 # Utilisation de $(RUN_PREFIX) pour gérer le ./
 run:
 	$(RUN_PREFIX)/$(EXEC) $(INPUT_NODES_A) $(INPUT_TOPO_A) $(INPUT_NODES_B) $(INPUT_TOPO_B)
@@ -67,4 +73,4 @@ run_tests:
 	$(RUN_PREFIX)/$(INTERSECTION)
 
 clean:
-	$(RM) $(EXEC) $(WINDING) $(INTERSECTION)
+	$(RM) $(EXEC) $(WINDING) $(INTERSECTION) $(SHARED_LIB)

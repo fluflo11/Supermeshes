@@ -62,7 +62,20 @@ void computeSupermesh(const std::vector<std::vector<Point2D>>& polysA,
                           std::vector<Point2D>& result_nodes,
                           bool debug = true);
 
+/**
+* Transforms cells into polygons and compute their bounding boxes
+@param result_polygons Ensure that this is empty 
+@param result_boxes Ensure that this is empty
+*/
+void precomputesPolysAndAABBs(const Topology& topology, 
+                                const std::vector<Point2D>& nodes, 
+                                std::vector<std::vector<Point2D>>& result_polygons, 
+                                std::vector<AABB>& result_boxes);
+
 }
+
+
+
 
 
 

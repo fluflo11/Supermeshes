@@ -257,3 +257,20 @@ void Utils::computeSupermesh(const std::vector<std::vector<Point2D>>& polysA,
         std::cout << "============================" << std::endl;
     }
 }
+
+//TODO : check if it works before implementing it in main
+void Utils::precomputesPolysAndAABBs(const Topology& topology, 
+                                const std::vector<Point2D>& nodes, 
+                                std::vector<std::vector<Point2D>>& result_polygons, 
+                                std::vector<AABB>& result_boxes)
+                                {
+    
+    result_polygons.reserve(topology.cells.size());
+    result_boxes.reserve(topology.cells.size());
+
+    for(const auto& cell : topology.cells){
+        auto poly = Utils::getCellPolygon(cell,nodes);
+        result_polygons.push_back(poly);
+        result_boxes.emplace_back(poly);
+    }
+}
