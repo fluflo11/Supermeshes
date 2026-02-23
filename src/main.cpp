@@ -25,15 +25,19 @@ int main(int argc, char *argv[]) {
     //Checking if all paths are valid or not
     if (!std::filesystem::exists(path_input_nodes_A)){
         std::cerr << "Path " << path_input_nodes_A << " is not valid" << std::endl;
+        return 1;
     }
     if (!std::filesystem::exists(path_input_nodes_B)){
         std::cerr << "Path " << path_input_nodes_B << " is not valid" << std::endl;
+        return 1;
     }
     if(!std::filesystem::exists(path_input_topo_A)){
         std::cerr << "Path " << path_input_topo_A << " is not valid" << std::endl;
+        return 1;
     }
     if(!std::filesystem::exists(path_input_topo_B)){
         std::cerr << "Path " << path_input_topo_B << " is not valid" << std::endl;
+        return 1;
     }
     
     auto nodesA = Point2D::getInputNodes(path_input_nodes_A);
@@ -75,27 +79,14 @@ int main(int argc, char *argv[]) {
     std::vector<std::vector<Point2D>> polygons_A;
     std::vector<AABB> boxes_A;
 
-    polygons_A.reserve(topoA.cells.size());
-    boxes_A.reserve(topoA.cells.size());
-
-    //For each cell we convert it to a vector of points and we store it as a polygon
-    for (const auto& cell : topoA.cells) {
-        auto poly = Utils::getCellPolygon(cell, nodesA);
-        polygons_A.push_back(poly);
-        boxes_A.emplace_back(poly);
-    }
+    Utils::precomputesPolysAndAABBs(topoA,nodesA,polygons_A,boxes_A);
 
     std::vector<std::vector<Point2D>> polygons_B;
     std::vector<AABB> boxes_B;
-    polygons_B.reserve(topoB.cells.size());
-    boxes_B.reserve(topoB.cells.size());
 
-    for (const auto& cell : topoB.cells) {
-        auto poly = Utils::getCellPolygon(cell, nodesB);
-        polygons_B.push_back(poly);
-        boxes_B.emplace_back(poly);
-    }
+    Utils::precomputesPolysAndAABBs(topoB,nodesB,polygons_B,boxes_B);
 
+    
     // Intersections part
 
     Topology result_topo;
@@ -103,6 +94,9 @@ int main(int argc, char *argv[]) {
     
     Utils::computeSupermesh(polygons_A, boxes_A, polygons_B, boxes_B, result_topo, result_nodes, debug);
 
+    //performance measure for debug
+    auto end_time = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> duration = end_time - start_time;
     //Exporting the final result as a vtk file
     VTK::VTK_Exporter exporter(result_topo, result_nodes);
     
@@ -114,9 +108,6 @@ int main(int argc, char *argv[]) {
         } else {
             std::cerr << "[ERROR] Export failed." << std::endl;
         }
-        auto end_time = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> duration = end_time - start_time;
-
         std::cout << "Done in " << duration.count() << " seconds." << std::endl;
         
         std::cout << "Exporting to VTK" << std::endl;

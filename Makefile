@@ -52,8 +52,7 @@ build_tests:
 
 build_shared :
 	$(CXX) $(SHARED_FLAGS) $(SHARED_LIB) $(FILES)
- 
-# Utilisation de $(RUN_PREFIX) pour gérer le ./
+
 run:
 	$(RUN_PREFIX)/$(EXEC) $(INPUT_NODES_A) $(INPUT_TOPO_A) $(INPUT_NODES_B) $(INPUT_TOPO_B)
 

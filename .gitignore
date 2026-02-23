@@ -5,3 +5,14 @@ masterpiece.png
 auto_test_winding
 auto_test_intersection
 *.vtk
+*.so
+*.so.*
+*.dylib
+*.a
+*.out
+*.app/
+*.exe
+*.dll
+*.lib
+*.pdb
+*.exp
