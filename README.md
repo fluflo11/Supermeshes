@@ -10,6 +10,11 @@ Or simply
 ```
 g++ -o supermesh src/main.cpp src/structs.cpp src/utils.cpp src/VTK_Tools.cpp
 ```
+You can also compile the program as a shared library with
+```
+make build_shared
+```
+Its supported on windows & linux and there shouldnt be too much bugs. Ill add the API documentation "soon". 
 Then you can run the program with :
 ```
 make run
@@ -25,8 +30,7 @@ if you are on linux, or
 On windows.
 
 ## Incoming features
-
-- Compiling this as a shared library
+- Adding a "union" supermesh option
 - Creating a wrapper to use it in Python
 
 ## Parsing 
@@ -64,6 +68,7 @@ I went through a lot of documentation to find the algorithm I wanted to use, I d
 * https://www.cnblogs.com/chriscai/archive/2009/12/10/1620932.html
 
 ![](thinking-cat.gif)
+
 
 
 
